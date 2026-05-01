@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.97048, y: 0.94855, z: -4.14}
-  m_LocalScale: {x: 0.26343, y: 0.26343, z: 0.26343}
+  m_LocalScale: {x: 0.12372517, y: 0.12372517, z: 0.12372517}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -126,9 +126,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f63cb405e2b965c48b30922de873b8bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBullet
-  speed: 40
+  speed: 15
   lifeTime: 3
-  enemyDeathEffect: {fileID: 5114165887232924903, guid: da64dbccddd4d794ab9a906cde60e27b, type: 3}
+  enemyDeathEffect: {fileID: 3958431211985779299, guid: d4c08d6101fc4754d92062c23eddc500, type: 3}
 --- !u!54 &-6235458975743679154
 Rigidbody:
   m_ObjectHideFlags: 0

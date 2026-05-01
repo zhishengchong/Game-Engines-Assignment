@@ -6,7 +6,6 @@ public class PlayerBullet : MonoBehaviour
     public float lifeTime = 3f;     
 
     [Header("视觉反馈")]
-    [Tooltip("把做好的敌人死亡粒子特效预制体拖到这里")]
     public GameObject enemyDeathEffect; 
 
     void Start()
@@ -23,26 +22,27 @@ public class PlayerBullet : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            // ==========================================
-            // 【视觉反馈】：在敌人死亡的位置生成爆炸碎片！
-            // ==========================================
+            // 1. 生成爆炸特效
             if (enemyDeathEffect != null)
             {
                 Instantiate(enemyDeathEffect, other.transform.position, Quaternion.identity);
             }
 
-            // 通知玩家获得了 Dash 权限
+            // 2. 通知玩家获得 Dash 权限
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
                 DashController dashCtrl = player.GetComponent<DashController>();
-                if (dashCtrl != null)
-                {
-                    dashCtrl.OnEnemyKilled(other.transform.position);
-                }
+                if (dashCtrl != null) dashCtrl.OnEnemyKilled(other.transform.position);
             }
 
-            // 击杀敌人并销毁子弹
+            // 3. 【核心新增】：通知 GameManager 检查胜利条件
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.CheckWinCondition();
+            }
+
+            // 4. 销毁敌人和子弹
             Destroy(other.gameObject);
             Destroy(gameObject); 
         }

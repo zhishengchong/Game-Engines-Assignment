@@ -16,12 +16,20 @@ public class VisualFeedbackController : MonoBehaviour
     public float normalVignette = 0.15f; 
 
     [Header("视觉参数：死亡时")]
-    public float deathSaturation = -100f; // 彻底黑白
-    public float deathVignette = 0.6f;    // 强烈的四周黑影
-    public float deathTransitionSpeed = 5f; // 死亡滤镜的蔓延速度
+    public float deathSaturation = -100f; 
+    public float deathVignette = 0.6f;    
+    public float deathTransitionSpeed = 5f; 
+
+    [Header("视觉参数：冲刺色差 (Chromatic Aberration)")]
+    public float dashChromatic = 1f; // 1 代表极其强烈的红蓝颜色剥离
+    public float chromaticSpeed = 15f;  
+    public float dashVisualDuration = 0.3f; 
 
     private ColorAdjustments _colorAdjustments;
     private Vignette _vignette;
+    private ChromaticAberration _chromaticAberration;
+
+    private float _dashEffectTimer = 0f;
 
     void Start()
     {
@@ -29,6 +37,8 @@ public class VisualFeedbackController : MonoBehaviour
         {
             globalVolume.profile.TryGet(out _colorAdjustments);
             globalVolume.profile.TryGet(out _vignette);
+            // 获取我们刚刚替换上的色差分离模块
+            globalVolume.profile.TryGet(out _chromaticAberration);
         }
     }
 
@@ -36,18 +46,34 @@ public class VisualFeedbackController : MonoBehaviour
     {
         if (_colorAdjustments == null || _vignette == null) return;
 
+        if (DashController.Instance != null && DashController.Instance.isDashing)
+        {
+            _dashEffectTimer = dashVisualDuration; 
+        }
+
         // ==========================================
-        // 【电影级死亡过渡】：当时间静止时，滤镜缓慢蔓延
+        // 【全新特效】：色差分离带来的极限速度感
         // ==========================================
+        if (_chromaticAberration != null)
+        {
+            if (_dashEffectTimer > 0f)
+            {
+                _dashEffectTimer -= Time.unscaledDeltaTime;
+                _chromaticAberration.intensity.value = Mathf.Lerp(_chromaticAberration.intensity.value, dashChromatic, Time.unscaledDeltaTime * chromaticSpeed);
+            }
+            else
+            {
+                _chromaticAberration.intensity.value = Mathf.Lerp(_chromaticAberration.intensity.value, 0f, Time.unscaledDeltaTime * (chromaticSpeed * 0.5f));
+            }
+        }
+
         if (Time.timeScale == 0f)
         {
-            // 使用 unscaledDeltaTime 配合 Lerp，让色彩和暗角如潮水般平滑褪去和包裹
             _colorAdjustments.saturation.value = Mathf.Lerp(_colorAdjustments.saturation.value, deathSaturation, Time.unscaledDeltaTime * deathTransitionSpeed);
             _vignette.intensity.value = Mathf.Lerp(_vignette.intensity.value, deathVignette, Time.unscaledDeltaTime * deathTransitionSpeed);
             return; 
         }
 
-        // 平时的平滑过渡逻辑 (根据 timeScale)
         float t = (Time.timeScale - 0.05f) / (1f - 0.05f);
         t = Mathf.Clamp01(t);
 
