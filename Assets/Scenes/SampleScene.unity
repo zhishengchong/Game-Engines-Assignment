@@ -534,6 +534,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ChaserZombie (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 3025999965732548013, guid: 487bdda250edb034788578ad9462b138, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3082081652918923194, guid: 487bdda250edb034788578ad9462b138, type: 3}
       propertyPath: m_LocalPosition.x
       value: 46.34
@@ -1713,6 +1717,7 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
+  visionCheckInterval: 0.1
   bulletPrefab: {fileID: 4539636912028261669, guid: 02b85ea18a3c9a844bc1228bad7c91c1, type: 3}
   firePoint: {fileID: 1976151801}
   fireRate: 1.5
@@ -1969,6 +1974,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ChaserZombie (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 3025999965732548013, guid: 487bdda250edb034788578ad9462b138, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3082081652918923194, guid: 487bdda250edb034788578ad9462b138, type: 3}
       propertyPath: m_LocalPosition.x
       value: 53.55
@@ -2148,6 +2157,7 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
+  visionCheckInterval: 0.1
   bulletPrefab: {fileID: 4539636912028261669, guid: 02b85ea18a3c9a844bc1228bad7c91c1, type: 3}
   firePoint: {fileID: 1760524457}
   fireRate: 1.5
@@ -2314,6 +2324,7 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
+  visionCheckInterval: 0.1
   bulletPrefab: {fileID: 4539636912028261669, guid: 02b85ea18a3c9a844bc1228bad7c91c1, type: 3}
   firePoint: {fileID: 966289457}
   fireRate: 1.5
@@ -3204,6 +3215,7 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
+  visionCheckInterval: 0.1
   bulletPrefab: {fileID: 4539636912028261669, guid: 02b85ea18a3c9a844bc1228bad7c91c1, type: 3}
   firePoint: {fileID: 336256881}
   fireRate: 1.5
@@ -3745,6 +3757,7 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 64
+  visionCheckInterval: 0.1
   bulletPrefab: {fileID: 4539636912028261669, guid: 02b85ea18a3c9a844bc1228bad7c91c1, type: 3}
   firePoint: {fileID: 1327040157}
   fireRate: 1.5
@@ -3858,6 +3871,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ChaserZombie (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 3025999965732548013, guid: 487bdda250edb034788578ad9462b138, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3082081652918923194, guid: 487bdda250edb034788578ad9462b138, type: 3}
       propertyPath: m_LocalPosition.x
       value: 45.800003
@@ -3927,13 +3944,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1866710769}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.00041738665, z: -0, w: 0.99999994}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.255, y: -0.3000002, z: 0.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 878799085}
-  m_LocalEulerAnglesHint: {x: 0, y: 0.048, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1920164062
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3945,6 +3962,10 @@ PrefabInstance:
     - target: {fileID: 3025999965732548013, guid: 487bdda250edb034788578ad9462b138, type: 3}
       propertyPath: m_Name
       value: ChaserZombie (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3025999965732548013, guid: 487bdda250edb034788578ad9462b138, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3082081652918923194, guid: 487bdda250edb034788578ad9462b138, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4247,6 +4268,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: K-39
       objectReference: {fileID: 0}
+    - target: {fileID: 9153445644485808911, guid: 539e1674cb882b8488322554b0647e73, type: 3}
+      propertyPath: shootSound
+      value: 
+      objectReference: {fileID: 8300000, guid: cf7ec84b7c810ce439b180ce7e078763, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4320,6 +4345,10 @@ PrefabInstance:
     - target: {fileID: 3025999965732548013, guid: 487bdda250edb034788578ad9462b138, type: 3}
       propertyPath: m_Name
       value: ChaserZombie
+      objectReference: {fileID: 0}
+    - target: {fileID: 3025999965732548013, guid: 487bdda250edb034788578ad9462b138, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3082081652918923194, guid: 487bdda250edb034788578ad9462b138, type: 3}
       propertyPath: m_LocalPosition.x

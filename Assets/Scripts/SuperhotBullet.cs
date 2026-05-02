@@ -5,34 +5,44 @@ public class SuperhotBullet : MonoBehaviour
     public float speed = 20f;       
     public float lifeTime = 5f;     
 
-    void Start()
+    private float _timer;
+
+    // ==========================================
+    // 【核心修复】：不用 Start 设置 Destroy，改用计时器隐身
+    // ==========================================
+    void OnEnable()
     {
-        Destroy(gameObject, lifeTime);
+        _timer = 0f; // 每次从对象池拿出来激活时，寿命清零
     }
 
     void Update()
     {
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
+
+        // 寿命耗尽，隐身回收到池子里
+        _timer += Time.deltaTime;
+        if (_timer >= lifeTime)
+        {
+            gameObject.SetActive(false);
+        }
     }
 
     void OnTriggerEnter(Collider other)
     {
-        // 1. 如果打中了玩家
         if (other.CompareTag("Player"))
         {
-            // 通知 GameManager 触发死亡重载逻辑
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.PlayerDied();
             }
             
-            // 销毁这发致命的子弹
-            Destroy(gameObject);
+            // 打中玩家后隐身回收
+            gameObject.SetActive(false);
         }
-        // 2. 如果打中了墙壁等环境
         else if (other.CompareTag("Environment"))
         {
-            Destroy(gameObject);
+            // 打中墙壁后隐身回收
+            gameObject.SetActive(false);
         }
     }
 }

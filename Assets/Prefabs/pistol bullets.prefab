@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f63cb405e2b965c48b30922de873b8bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerBullet
-  speed: 20
+  speed: 40
   lifeTime: 3
   enemyDeathEffect: {fileID: 3958431211985779299, guid: d4c08d6101fc4754d92062c23eddc500, type: 3}
 --- !u!54 &-6235458975743679154
@@ -152,7 +152,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0

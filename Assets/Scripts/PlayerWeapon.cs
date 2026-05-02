@@ -15,27 +15,28 @@ public class PlayerWeapon : MonoBehaviour
     public AudioClip shootSound;
     private AudioSource _audioSource;
 
+    // 新增：需要获取主摄像机来进行准星校准
+    private Camera _mainCamera;
+
     void Start()
     {
-        // 初始化弹药
         currentAmmo = maxAmmo;
 
-        // 开启刚体平滑插值
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
             rb.interpolation = RigidbodyInterpolation.Interpolate;
         }
 
-        // ==========================================
-        // 【音效初始化】：自动在武器身上挂载一个喇叭
-        // ==========================================
         _audioSource = GetComponent<AudioSource>();
         if (_audioSource == null) 
         {
             _audioSource = gameObject.AddComponent<AudioSource>();
-            _audioSource.playOnAwake = false; // 防止游戏一开始就乱响
+            _audioSource.playOnAwake = false; 
         }
+
+        // 初始化摄像机
+        _mainCamera = Camera.main;
     }
 
     public bool TryShoot()
@@ -44,22 +45,43 @@ public class PlayerWeapon : MonoBehaviour
         {
             currentAmmo--;
             
-            if (playerBulletPrefab != null && firePoint != null)
+            if (playerBulletPrefab != null && firePoint != null && _mainCamera != null)
             {
-                Instantiate(playerBulletPrefab, firePoint.position, firePoint.rotation);
+                // ==========================================
+                // 【核心修复】：FPS 准星视差校准系统
+                // ==========================================
+                
+                // 1. 从屏幕正中心（准星位置）射出一条隐形射线
+                Ray ray = _mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+                RaycastHit hit;
+                
+                // 2. 确定子弹最终要飞向的“目标点”
+                Vector3 targetPoint;
+                if (Physics.Raycast(ray, out hit))
+                {
+                    // 如果准星指着墙壁或敌人，目标点就是打中的那个点
+                    targetPoint = hit.point;
+                }
+                else
+                {
+                    // 如果准星指着天空（什么都没打中），目标点就是极远处的一个点
+                    targetPoint = ray.GetPoint(1000f);
+                }
+
+                // 3. 计算从【枪口】到【目标点】的确切飞行方向
+                Vector3 directionWithoutSpread = targetPoint - firePoint.position;
+
+                // 4. 生成子弹，并强制它看向那个目标点！
+                GameObject currentBullet = Instantiate(playerBulletPrefab, firePoint.position, Quaternion.identity);
+                currentBullet.transform.forward = directionWithoutSpread.normalized;
             }
             
-            // ==========================================
-            // 【播放音效】：使用 PlayOneShot 允许声音叠加（连发不会互相打断）
-            // ==========================================
             if (shootSound != null && _audioSource != null)
             {
-                // 随机稍微改变一下音高，让每次开火听起来不那么单调机械
                 _audioSource.pitch = Random.Range(0.9f, 1.1f);
                 _audioSource.PlayOneShot(shootSound);
             }
             
-            Debug.Log("开火！剩余子弹: " + currentAmmo);
             return true;
         }
         else
