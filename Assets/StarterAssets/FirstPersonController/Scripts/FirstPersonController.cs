@@ -45,6 +45,12 @@ namespace StarterAssets
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
 
+        // ==========================================
+        // 【新增】：惯性系统与跳板免检期保护
+        // ==========================================
+        private Vector3 _externalVelocity = Vector3.zero;
+        private float _jumpPadGraceTimer = 0f;
+
 #if ENABLE_INPUT_SYSTEM
 		private PlayerInput _playerInput;
 #endif
@@ -90,10 +96,6 @@ namespace StarterAssets
 
 		private void Update()
 		{
-			// ==========================================
-			// 【Dash 防报错补丁】：在冲刺时，碰撞体会被关闭
-			// 如果发现碰撞体未激活，直接跳过本帧的所有移动与重力计算！
-			// ==========================================
 			if (_controller != null && !_controller.enabled) return;
 
 			JumpAndGravity();
@@ -108,6 +110,16 @@ namespace StarterAssets
 
 		private void GroundedCheck()
 		{
+            // ==========================================
+            // 【跳板核心修复】：免检期内，强行屏蔽重力吸附！
+            // ==========================================
+            if (_jumpPadGraceTimer > 0f)
+            {
+                _jumpPadGraceTimer -= Time.unscaledDeltaTime;
+                Grounded = false;
+                return; // 直接跳过后面的地面物理射线检测
+            }
+
 			Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
 			Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
 		}
@@ -116,7 +128,6 @@ namespace StarterAssets
 		{
 			if (_input.look.sqrMagnitude >= _threshold)
 			{
-				// SUPERHOT 修复：转动视角使用真实时间
 				float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.unscaledDeltaTime;
 				
 				_cinemachineTargetPitch += _input.look.y * RotationSpeed * deltaTimeMultiplier;
@@ -133,15 +144,12 @@ namespace StarterAssets
 			float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
 			if (_input.move == Vector2.zero) targetSpeed = 0.0f;
 
-			// 【防瞬移核心修复】：不再信任物理引擎乱报的速度，直接使用我们自己计算的 _speed
 			float currentHorizontalSpeed = _speed; 
-			
 			float speedOffset = 0.1f;
 			float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
 
 			if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
 			{
-				// SUPERHOT 修复：平滑加速使用真实时间
 				_speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude, Time.unscaledDeltaTime * SpeedChangeRate);
 				_speed = Mathf.Round(_speed * 1000f) / 1000f;
 			}
@@ -156,16 +164,21 @@ namespace StarterAssets
 				inputDirection = transform.right * _input.move.x + transform.forward * _input.move.y;
 			}
 
-			// SUPERHOT 修复：最终位移计算使用真实时间
 			Vector3 moveVector = inputDirection.normalized * (_speed * Time.unscaledDeltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.unscaledDeltaTime;
 
-			// 防瞬移安全锁：如果一帧算出来的位移比 5 米还大，说明炸了，强制归零
+            // 叠加惯性
+            moveVector += _externalVelocity * Time.unscaledDeltaTime;
+
 			if (moveVector.magnitude > 5f) 
 			{
 				moveVector = Vector3.zero;
 			}
 
 			_controller.Move(moveVector);
+
+            // 空中保持惯性，落地迅速衰减摩擦
+            float friction = Grounded ? 10f : 1.5f;
+            _externalVelocity = Vector3.Lerp(_externalVelocity, Vector3.zero, Time.unscaledDeltaTime * friction);
 		}
 
 		private void JumpAndGravity()
@@ -173,8 +186,6 @@ namespace StarterAssets
 			if (Grounded)
 			{
 				_fallTimeoutDelta = FallTimeout;
-
-				// 安全锁：在地面时锁定垂直速度
 				_verticalVelocity = -2f;
 
 				if (_input.jump && _jumpTimeoutDelta <= 0.0f)
@@ -197,14 +208,12 @@ namespace StarterAssets
 				}
 				_input.jump = false;
 
-				// 安全锁：限制下落最大速度
 				if (_verticalVelocity < -_terminalVelocity)
 				{
 					_verticalVelocity = -_terminalVelocity;
 				}
 			}
 
-			// SUPERHOT 修复：重力随真实时间累加
 			if (!Grounded && _verticalVelocity < _terminalVelocity)
 			{
 				_verticalVelocity += Gravity * Time.unscaledDeltaTime;
@@ -227,6 +236,16 @@ namespace StarterAssets
 			else Gizmos.color = transparentRed;
 
 			Gizmos.DrawSphere(new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z), GroundedRadius);
+		}
+
+		public void ApplyJumpPadForce(Vector3 launchVelocity)
+		{
+			_verticalVelocity = launchVelocity.y;
+            _externalVelocity = new Vector3(launchVelocity.x, 0, launchVelocity.z);
+			Grounded = false; 
+            
+            // 注入 0.2 秒的无敌起飞时间！
+            _jumpPadGraceTimer = 0.2f; 
 		}
 	}
 }

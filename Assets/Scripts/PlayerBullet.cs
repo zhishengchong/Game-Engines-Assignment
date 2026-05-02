@@ -22,7 +22,7 @@ public class PlayerBullet : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            // 1. 生成爆炸特效
+            // 1. 生成爆炸特效 (你做的那个超帅的赛博碎片)
             if (enemyDeathEffect != null)
             {
                 Instantiate(enemyDeathEffect, other.transform.position, Quaternion.identity);
@@ -36,13 +36,21 @@ public class PlayerBullet : MonoBehaviour
                 if (dashCtrl != null) dashCtrl.OnEnemyKilled(other.transform.position);
             }
 
-            // 3. 【核心新增】：通知 GameManager 检查胜利条件
+            // ==========================================
+            // 3. 【核心新增】：击杀减技能 CD 3 秒！
+            // ==========================================
+            if (JumpPadSkill.Instance != null)
+            {
+                JumpPadSkill.Instance.ReduceCooldown(3f);
+            }
+
+            // 4. 通知 GameManager 检查胜利条件
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.CheckWinCondition();
             }
 
-            // 4. 销毁敌人和子弹
+            // 5. 销毁敌人和子弹
             Destroy(other.gameObject);
             Destroy(gameObject); 
         }
