@@ -422,7 +422,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 037a736897c295a409c4733b805fb0ab, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -14
+      value: -17.41
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 037a736897c295a409c4733b805fb0ab, type: 3}
       propertyPath: m_LocalPosition.y
@@ -967,7 +967,7 @@ MonoBehaviour:
   acceleration: 20
   suctionSmoothness: 10
   exitForce: 30
-  chromaticDuration: 1.5
+  chromaticDuration: 1.2
 --- !u!65 &483001657
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3216,6 +3216,20 @@ MonoBehaviour:
   globalVolume: {fileID: 1416077846}
   speedLines: {fileID: 1992391849}
   particleFadeSpeed: 5
+  maxFlashExposure: 2.5
+  flashDecaySpeed: 10
+  shakeDuration: 0.2
+  shakeMagnitude: 0.2
+  jumpPadDistortionPunch: -0.85
+  tunnelSustainedDistortion: -0.3
+  paniniDistance: 1
+  distortionSpeed: 10
+  muffledFrequency: 1500
+  normalFrequency: 22000
+  audioTransitionSpeed: 10
+  jumpPadVignettePunch: 0.85
+  jumpPadVignetteSmoothness: 1
+  vignetteDecaySpeed: 2.5
   slowSaturation: -60
   slowVignette: 0.45
   normalSaturation: 0
@@ -3682,6 +3696,14 @@ PrefabInstance:
     - target: {fileID: 2895367311317429893, guid: 16fbf7d0f6999bc4fab1676dc161222c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8907397483153539540, guid: 16fbf7d0f6999bc4fab1676dc161222c, type: 3}
+      propertyPath: tunnelFOV
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 8907397483153539540, guid: 16fbf7d0f6999bc4fab1676dc161222c, type: 3}
+      propertyPath: fovExpandSpeed
+      value: 40
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8733,7 +8755,7 @@ Transform:
   m_GameObject: {fileID: 2079796488}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -20.45, y: 1.88, z: -8.6}
+  m_LocalPosition: {x: -23.86, y: 1.88, z: -8.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -9180,7 +9202,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2895367311317429893, guid: 16fbf7d0f6999bc4fab1676dc161222c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.767
+      value: -1.695
       objectReference: {fileID: 0}
     - target: {fileID: 2895367311317429893, guid: 16fbf7d0f6999bc4fab1676dc161222c, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9214,9 +9236,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3031252527134692715, guid: 16fbf7d0f6999bc4fab1676dc161222c, type: 3}
+      propertyPath: m_Mass
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8907397483153539540, guid: 16fbf7d0f6999bc4fab1676dc161222c, type: 3}
+      propertyPath: tunnelFOV
+      value: 120
+      objectReference: {fileID: 0}
     - target: {fileID: 8907397483153539540, guid: 16fbf7d0f6999bc4fab1676dc161222c, type: 3}
       propertyPath: upwardForce
-      value: 10
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 8907397483153539540, guid: 16fbf7d0f6999bc4fab1676dc161222c, type: 3}
       propertyPath: forwardForce

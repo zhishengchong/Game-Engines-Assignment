@@ -11,10 +11,9 @@ public class JumpPad : MonoBehaviour
     public AudioClip bounceSound;
 
     [Header("管道专用设置 (仅限管道前的跳板使用)")]
-    [Tooltip("勾选此项，踩下跳板的瞬间就会撑爆 FOV！")]
+    [Tooltip("勾选此项，踩下跳板的瞬间就会触发顶级 AAA 视听反馈！")]
     public bool isTunnelStarter = false;
     public float tunnelFOV = 110f;
-    [Tooltip("镜头拉伸的速度 (越大拉伸越快，建议 25-35 模拟瞬间冲刺)")]
     public float fovExpandSpeed = 30f;
     
     private Rigidbody _rb;
@@ -25,6 +24,7 @@ public class JumpPad : MonoBehaviour
         _rb = GetComponent<Rigidbody>();
     }
 
+    // 落地静止逻辑
     private void OnCollisionEnter(Collision collision)
     {
         if (_hasLanded) return;
@@ -42,6 +42,7 @@ public class JumpPad : MonoBehaviour
         }
     }
 
+    // 弹射玩家逻辑
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -55,11 +56,21 @@ public class JumpPad : MonoBehaviour
                 fpc.ApplyJumpPadForce(launchVelocity);
                 
                 // ==========================================
-                // 2. 【核心新增】：起跳瞬间，极速撑爆镜头！
+                // 2. 触发史诗级起跳反馈 (FOV撑爆 + 屏幕过曝 + 镜头震动)
                 // ==========================================
-                if (isTunnelStarter && DashController.Instance != null)
+                if (isTunnelStarter)
                 {
-                    DashController.Instance.HoldFOV(tunnelFOV, fovExpandSpeed);
+                    // 呼叫冲刺脚本撑爆 FOV
+                    if (DashController.Instance != null)
+                    {
+                        DashController.Instance.HoldFOV(tunnelFOV, fovExpandSpeed);
+                    }
+                    
+                    // 呼叫视觉总管，瞬间爆亮屏幕、震动镜头并切入重影
+                    if (VisualFeedbackController.Instance != null)
+                    {
+                        VisualFeedbackController.Instance.TriggerJumpPadFeedback();
+                    }
                 }
                 
                 if (bounceSound != null)
