@@ -36,7 +36,6 @@ public class TunnelRailSystem : MonoBehaviour
 
         if (cc != null) cc.enabled = false;
 
-        // 【优化】：不再在这里触发 FOV 变化了！只触发全屏色差特效。
         if (VisualFeedbackController.Instance != null) 
         {
             VisualFeedbackController.Instance.TriggerTunnelEffect(chromaticDuration);
@@ -46,14 +45,28 @@ public class TunnelRailSystem : MonoBehaviour
         Vector3 tunnelDir = (endPoint.position - startPoint.position).normalized;
         float currentSpeed = cc != null ? Mathf.Max(cc.velocity.magnitude, initialSpeed) : initialSpeed;
 
-        while (Vector3.Distance(currentPos, endPoint.position) > 1.5f)
+        // ==========================================
+        // 【防穿模重构】：计算管道的总长度
+        // ==========================================
+        float totalTunnelLength = Vector3.Distance(startPoint.position, endPoint.position);
+        float distanceAlongLine = 0f;
+
+        // 只要玩家在管道方向上的投影距离还没超过总长度，就继续牵引
+        while (distanceAlongLine < totalTunnelLength)
         {
             currentSpeed += acceleration * Time.unscaledDeltaTime;
 
             Vector3 offsetFromStart = currentPos - startPoint.position;
-            float distanceAlongLine = Vector3.Dot(offsetFromStart, tunnelDir);
-            Vector3 pointOnLine = startPoint.position + tunnelDir * distanceAlongLine;
+            // 计算玩家当前在管道中轴线上究竟走到了哪一步
+            distanceAlongLine = Vector3.Dot(offsetFromStart, tunnelDir);
 
+            // 【终极保险】：如果在这一帧由于速度过快，直接算到了终点之外，立刻打破循环！
+            if (distanceAlongLine >= totalTunnelLength)
+            {
+                break;
+            }
+
+            Vector3 pointOnLine = startPoint.position + tunnelDir * distanceAlongLine;
             Vector3 targetPullPoint = pointOnLine + tunnelDir * suctionSmoothness;
             Vector3 moveDir = (targetPullPoint - currentPos).normalized;
             
@@ -68,14 +81,14 @@ public class TunnelRailSystem : MonoBehaviour
             yield return null;
         }
 
+        // ==========================================
+        // 到达终点后的收尾动作
+        // ==========================================
         player.transform.position = endPoint.position;
         if (cc != null) cc.enabled = true; 
         
         if (fpc != null) fpc.ApplyJumpPadForce(tunnelDir * exitForce);
 
-        // ==========================================
-        // 【视觉收尾】：到达终点抛出时，通知镜头开始缓缓恢复
-        // ==========================================
         if (DashController.Instance != null) 
         {
             DashController.Instance.ReleaseFOV();
