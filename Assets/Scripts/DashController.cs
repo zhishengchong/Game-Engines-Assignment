@@ -14,10 +14,10 @@ public class DashController : MonoBehaviour
 
     [Header("电影级视角拉伸 (FOV Warp)")]
     public float dashFOV = 100f; 
+    [Tooltip("普通的、缓慢恢复的镜头速度")]
     public float fovRecoverySpeed = 8f; 
 
     [Header("音效设置")]
-    [Tooltip("把你找好的冲刺音效拖到这里")]
     public AudioClip dashSound;
     private AudioSource _audioSource;
 
@@ -30,6 +30,9 @@ public class DashController : MonoBehaviour
     private float _normalFOV = 40f;
     private float _targetFOV;
     private float _currentFOV;
+    
+    // 【核心新增】：用来动态控制当前镜头缩放的速度
+    private float _activeFovSpeed;
 
     void Awake()
     {
@@ -48,7 +51,8 @@ public class DashController : MonoBehaviour
             _currentFOV = _normalFOV;
         }
 
-        // 自动给玩家挂载一个喇叭用来播放冲刺声音
+        _activeFovSpeed = fovRecoverySpeed;
+
         _audioSource = GetComponent<AudioSource>();
         if (_audioSource == null)
         {
@@ -62,11 +66,7 @@ public class DashController : MonoBehaviour
         if (_dashAvailable)
         {
             _dashTimer -= Time.unscaledDeltaTime;
-            
-            if (_dashTimer <= 0f)
-            {
-                _dashAvailable = false;
-            }
+            if (_dashTimer <= 0f) _dashAvailable = false;
 
             if (Keyboard.current.shiftKey.wasPressedThisFrame && !isDashing)
             {
@@ -79,7 +79,8 @@ public class DashController : MonoBehaviour
     {
         if (_mainCamera != null)
         {
-            _currentFOV = Mathf.Lerp(_currentFOV, _targetFOV, Time.unscaledDeltaTime * fovRecoverySpeed);
+            // 无论拉伸还是收缩，都受动态速度控制
+            _currentFOV = Mathf.Lerp(_currentFOV, _targetFOV, Time.unscaledDeltaTime * _activeFovSpeed);
             _mainCamera.fieldOfView = _currentFOV;
         }
     }
@@ -95,23 +96,18 @@ public class DashController : MonoBehaviour
     {
         isDashing = true;
         _dashAvailable = false; 
-        
         _controller.enabled = false;
         
-        // ==========================================
-        // 【播放音效】：瞬间播放空间撕裂的冲刺声！
-        // ==========================================
         if (dashSound != null && _audioSource != null)
         {
-            _audioSource.pitch = 1f; // 保证冲刺声音不受之前操作的干扰
+            _audioSource.pitch = 1f; 
             _audioSource.PlayOneShot(dashSound);
         }
 
         _targetFOV = dashFOV;
-        _currentFOV = dashFOV; 
+        _activeFovSpeed = 20f; // 冲刺时快速拉伸
 
         Vector3 dashTarget = targetPos - (targetPos - transform.position).normalized * 1.5f;
-        
         while (Vector3.Distance(transform.position, dashTarget) > 0.5f)
         {
             transform.position = Vector3.Lerp(transform.position, dashTarget, Time.unscaledDeltaTime * dashSpeed);
@@ -122,5 +118,24 @@ public class DashController : MonoBehaviour
         isDashing = false;
 
         _targetFOV = _normalFOV;
+        _activeFovSpeed = fovRecoverySpeed; // 冲刺结束缓慢恢复
+    }
+
+    // ==========================================
+    // 【终极重构】：支持自定义速度的 FOV 门阀
+    // ==========================================
+    
+    // 1. 瞬间撑爆并锁定 (通过传入极高的 speed)
+    public void HoldFOV(float punchFOV, float expandSpeed)
+    {
+        _targetFOV = punchFOV; 
+        _activeFovSpeed = expandSpeed; // 比如传入 30，镜头就会在极短时间内瞬间撑爆
+    }
+
+    // 2. 解除锁定，平缓回落
+    public void ReleaseFOV()
+    {
+        _targetFOV = _normalFOV; 
+        _activeFovSpeed = fovRecoverySpeed; // 恢复为缓慢的 8f，平滑落地
     }
 }

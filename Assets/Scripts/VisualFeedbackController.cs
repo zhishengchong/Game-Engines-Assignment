@@ -4,8 +4,14 @@ using UnityEngine.Rendering.Universal;
 
 public class VisualFeedbackController : MonoBehaviour
 {
+    public static VisualFeedbackController Instance;
+
     [Header("后期处理配置")]
     public Volume globalVolume;
+
+    [Header("跑酷粒子特效")]
+    [Tooltip("把你绑定在摄像机上的 SpeedLines 粒子系统拖到这里！")]
+    public ParticleSystem speedLines;
 
     [Header("视觉参数：慢动作时 (停下)")]
     public float slowSaturation = -60f; 
@@ -20,8 +26,8 @@ public class VisualFeedbackController : MonoBehaviour
     public float deathVignette = 0.6f;    
     public float deathTransitionSpeed = 5f; 
 
-    [Header("视觉参数：冲刺色差 (Chromatic Aberration)")]
-    public float dashChromatic = 1f; // 1 代表极其强烈的红蓝颜色剥离
+    [Header("视觉参数：极速穿梭色差 (Chromatic Aberration)")]
+    public float dashChromatic = 1f; 
     public float chromaticSpeed = 15f;  
     public float dashVisualDuration = 0.3f; 
 
@@ -31,13 +37,17 @@ public class VisualFeedbackController : MonoBehaviour
 
     private float _dashEffectTimer = 0f;
 
+    void Awake()
+    {
+        Instance = this; 
+    }
+
     void Start()
     {
         if (globalVolume != null && globalVolume.profile != null)
         {
             globalVolume.profile.TryGet(out _colorAdjustments);
             globalVolume.profile.TryGet(out _vignette);
-            // 获取我们刚刚替换上的色差分离模块
             globalVolume.profile.TryGet(out _chromaticAberration);
         }
     }
@@ -51,19 +61,32 @@ public class VisualFeedbackController : MonoBehaviour
             _dashEffectTimer = dashVisualDuration; 
         }
 
-        // ==========================================
-        // 【全新特效】：色差分离带来的极限速度感
-        // ==========================================
         if (_chromaticAberration != null)
         {
             if (_dashEffectTimer > 0f)
             {
                 _dashEffectTimer -= Time.unscaledDeltaTime;
                 _chromaticAberration.intensity.value = Mathf.Lerp(_chromaticAberration.intensity.value, dashChromatic, Time.unscaledDeltaTime * chromaticSpeed);
+
+                // ==========================================
+                // 【核心新增】：触发屏幕重影时，同步喷射动漫速度线！
+                // ==========================================
+                if (speedLines != null && !speedLines.isPlaying)
+                {
+                    speedLines.Play();
+                }
             }
             else
             {
                 _chromaticAberration.intensity.value = Mathf.Lerp(_chromaticAberration.intensity.value, 0f, Time.unscaledDeltaTime * (chromaticSpeed * 0.5f));
+
+                // ==========================================
+                // 【核心新增】：重影消退时，干净利落地掐断速度线！
+                // ==========================================
+                if (speedLines != null && speedLines.isPlaying)
+                {
+                    speedLines.Stop();
+                }
             }
         }
 
@@ -79,5 +102,10 @@ public class VisualFeedbackController : MonoBehaviour
 
         _colorAdjustments.saturation.value = Mathf.Lerp(slowSaturation, normalSaturation, t);
         _vignette.intensity.value = Mathf.Lerp(slowVignette, normalVignette, t);
+    }
+
+    public void TriggerTunnelEffect(float duration)
+    {
+        _dashEffectTimer = Mathf.Max(_dashEffectTimer, duration);
     }
 }

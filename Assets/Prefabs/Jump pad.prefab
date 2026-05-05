@@ -129,8 +129,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec3441beda792aa4693eed5ede9642e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JumpPad
-  upwardForce: 20
-  forwardForce: 35
+  upwardForce: 12
+  forwardForce: 30
   bounceSound: {fileID: 8300000, guid: 356c0198b5541794fbeefe4f55ddb6a0, type: 3}
 --- !u!65 &3337631413266163318
 BoxCollider:
