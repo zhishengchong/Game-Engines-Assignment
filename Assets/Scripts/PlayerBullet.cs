@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class PlayerBullet : MonoBehaviour
 {
-    public float speed = 40f;       
-    public float lifeTime = 3f;     
+    public float speed = 40f;
+    public float lifeTime = 3f;
 
     [Header("视觉反馈")]
-    public GameObject enemyDeathEffect; 
+    public GameObject enemyDeathEffect;
 
     void Start()
     {
@@ -22,7 +22,7 @@ public class PlayerBullet : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            // 1. 生成爆炸特效 (你做的那个超帅的赛博碎片)
+            // 1. 生成爆炸特效
             if (enemyDeathEffect != null)
             {
                 Instantiate(enemyDeathEffect, other.transform.position, Quaternion.identity);
@@ -36,17 +36,11 @@ public class PlayerBullet : MonoBehaviour
                 if (dashCtrl != null) dashCtrl.OnEnemyKilled(other.transform.position);
             }
 
-            // (已成功切除 JumpPadSkill 减CD的相关报错代码)
+            // (已切除旧版的 GameManager.CheckWinCondition()，现在打死敌人不再触发胜利)
 
-            // 3. 通知 GameManager 检查胜利条件
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.CheckWinCondition();
-            }
-
-            // 4. 销毁敌人和子弹
+            // 3. 销毁敌人和子弹
             Destroy(other.gameObject);
-            Destroy(gameObject); 
+            Destroy(gameObject);
         }
         else if (other.CompareTag("Environment"))
         {
