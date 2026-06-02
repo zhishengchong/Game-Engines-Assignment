@@ -12,13 +12,13 @@ namespace StarterAssets
 	public class FirstPersonController : MonoBehaviour
 	{
 		[Header("Player")]
-		public float MoveSpeed = 4.0f;
-		public float SprintSpeed = 6.0f;
+		public float MoveSpeed = 10.0f;
+		public float SprintSpeed = 20.0f;
 		public float RotationSpeed = 1.0f;
 		public float SpeedChangeRate = 10.0f;
 
 		[Space(10)]
-		public float JumpHeight = 1.2f;
+		public float JumpHeight = 2.0f;
 		public float Gravity = -15.0f;
 
 		[Space(10)]

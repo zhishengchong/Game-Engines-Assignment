@@ -22,13 +22,11 @@ public class PlayerBullet : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
-            // 1. 生成爆炸特效 (你做的那个超帅的赛博碎片)
             if (enemyDeathEffect != null)
             {
                 Instantiate(enemyDeathEffect, other.transform.position, Quaternion.identity);
             }
 
-            // 2. 通知玩家获得 Dash 权限
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
@@ -36,17 +34,20 @@ public class PlayerBullet : MonoBehaviour
                 if (dashCtrl != null) dashCtrl.OnEnemyKilled(other.transform.position);
             }
 
-            // (已成功切除 JumpPadSkill 减CD的相关报错代码)
-
-            // 3. 通知 GameManager 检查胜利条件
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.CheckWinCondition();
-            }
-
-            // 4. 销毁敌人和子弹
             Destroy(other.gameObject);
             Destroy(gameObject); 
+        }
+        // ==========================================
+        // 【核心新增】：检测是否打中了靶心开关
+        // ==========================================
+        else if (other.CompareTag("TargetSwitch"))
+        {
+            TargetSwitch target = other.GetComponent<TargetSwitch>();
+            if (target != null)
+            {
+                target.OnHit(); // 触发靶子！
+            }
+            Destroy(gameObject); // 子弹打中靶子后销毁
         }
         else if (other.CompareTag("Environment"))
         {

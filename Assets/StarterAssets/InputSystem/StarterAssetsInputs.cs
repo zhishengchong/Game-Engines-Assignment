@@ -20,6 +20,16 @@ namespace StarterAssets
 		public bool cursorLocked = true;
 		public bool cursorInputForLook = true;
 
+        // ==========================================
+        // 【核心修复】：生命周期补丁
+        // 强制在玩家每次出生（场景加载）时，立刻刷新一次鼠标锁定状态！
+        // 完美解决 Unity 编辑器不重新获取焦点的祖传 Bug。
+        // ==========================================
+        private void Start()
+        {
+            SetCursorState(cursorLocked);
+        }
+
 #if ENABLE_INPUT_SYSTEM
 		public void OnMove(InputValue value)
 		{
@@ -76,5 +86,4 @@ namespace StarterAssets
 			Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
 		}
 	}
-	
 }
