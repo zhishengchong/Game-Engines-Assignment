@@ -543,10 +543,15 @@ MonoBehaviour:
   visionRange: 20
   visionAngle: 90
   proximityRadius: 3
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 0
+  visionCheckInterval: 0.1
   bulletPrefab: {fileID: 4539636912028261669, guid: 02b85ea18a3c9a844bc1228bad7c91c1, type: 3}
   firePoint: {fileID: 1760524457}
   fireRate: 1.5
   rotationSpeed: 5
+  _hasSpottedPlayer: 0
 --- !u!1001 &1009741250
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -694,6 +699,14 @@ PrefabInstance:
       propertyPath: SprintSpeed
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 2609866088878031649, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: Target.TrackingTarget
+      value: 
+      objectReference: {fileID: 1060331692}
+    - target: {fileID: 2609866088878031649, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: Target.CustomLookAtTarget
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2862278905927072855, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.x
       value: -22.210217
@@ -705,6 +718,10 @@ PrefabInstance:
     - target: {fileID: 2862278905927072855, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.z
       value: -23.948788
+      objectReference: {fileID: 0}
+    - target: {fileID: 2862278905927073192, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: m_Name
+      value: PlayerFollowCamera
       objectReference: {fileID: 0}
     - target: {fileID: 5126527961139664760, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.x
@@ -782,7 +799,9 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2862278905927072854, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+    - {fileID: 757721613204953321, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3697362953775235280, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
@@ -790,6 +809,11 @@ PrefabInstance:
       addedObject: {fileID: 586364593}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+--- !u!4 &1060331692 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5242107653240477475, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+  m_PrefabInstance: {fileID: 1060331691}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1149143754
 GameObject:
   m_ObjectHideFlags: 0
@@ -834,9 +858,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2384631e2ce73de4d8980b8579d9107e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slowTimeScale: 0.05
-  normalTimeScale: 1
-  lerpSpeed: 10
+  minTimeScale: 0.1
+  abilityDuration: 3.5
+  cooldownTime: 5
+  adrenalineCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  timeSlowActivateSound: {fileID: 0}
+  skillText: {fileID: 0}
+  asciiBarText: {fileID: 0}
+  asciiBarLength: 20
+  filledChar: "\u2588"
+  emptyChar: '-'
+  leftBracket: {fileID: 0}
+  rightBracket: {fileID: 0}
+  leftGraphic: {fileID: 0}
+  rightGraphic: {fileID: 0}
+  centerCrosshairImage: {fileID: 0}
+  bracketDistanceOpen: 60
+  bracketDistanceClosed: 15
+  colorReady: {r: 1, g: 1, b: 1, a: 1}
+  colorCrosshairNormal: {r: 1, g: 1, b: 1, a: 1}
+  colorActive: {r: 1, g: 0.1, b: 0.1, a: 1}
+  colorCooldown: {r: 0.4, g: 0.4, b: 0.4, a: 1}
 --- !u!1 &1189383839
 GameObject:
   m_ObjectHideFlags: 0

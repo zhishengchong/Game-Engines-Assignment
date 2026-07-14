@@ -60,10 +60,10 @@ public class JumpPad : MonoBehaviour
                 // ==========================================
                 if (isTunnelStarter)
                 {
-                    // 呼叫冲刺脚本撑爆 FOV
+                    // 呼叫冲刺脚本撑爆 FOV，并挂上 1.5 秒的定时炸弹！
                     if (DashController.Instance != null)
                     {
-                        DashController.Instance.HoldFOV(tunnelFOV, fovExpandSpeed);
+                        DashController.Instance.HoldFOV(tunnelFOV, fovExpandSpeed, 1.5f);
                     }
                     
                     // 呼叫视觉总管，瞬间爆亮屏幕、震动镜头并切入重影

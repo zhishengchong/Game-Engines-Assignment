@@ -16,7 +16,6 @@ public class VisualFeedbackController : MonoBehaviour
 
     [Header("🚀 1. 跳板过曝闪光特效 (Flash)")]
     public float maxFlashExposure = 2.5f; 
-    [Tooltip("稍微调慢了白光消散的速度，让强光多刺眼一会")]
     public float flashDecaySpeed = 5f; 
     private float _currentExposure = 0f;
 
@@ -39,31 +38,32 @@ public class VisualFeedbackController : MonoBehaviour
     private AudioLowPassFilter _lowPassFilter;
 
     [Header("👁️ 5. 极速失焦黑视 (Tunnel Vision)")]
-    [Tooltip("起跳瞬间屏幕四周变黑的厚度（0-1之间，建议 0.85）")]
     public float jumpPadVignettePunch = 0.85f;
-    [Tooltip("深渊渐变柔和度（极其关键！设为1就是一圈圈向外深邃变黑，彻底消除贴纸感）")]
     public float jumpPadVignetteSmoothness = 1f;
-    [Tooltip("黑视消散的速度（改小了！数字越小，在空中的黑视停留越久。建议 2-3）")]
     public float vignetteDecaySpeed = 2.5f;
 
     private float _currentVignettePunch = 0f;
     private float _currentVignetteSmoothness = 0.2f;
-    private float _baseVignetteSmoothness = 0.2f; // 记录你原本游戏的暗角平滑度
+    private float _baseVignetteSmoothness = 0.2f; 
 
-    [Header("视觉参数：慢动作时 (停下)")]
-    public float slowSaturation = -60f; 
-    public float slowVignette = 0.45f;  
+    [Header("视觉参数：慢动作时 (超频爆发)")]
+    public float slowSaturation = -100f; 
+    public float slowExposure = -1.5f;   
+    public float slowChromatic = 1f;     
+    public float slowVignette = 0.5f;  
 
     [Header("视觉参数：正常速度时 (跑动)")]
     public float normalSaturation = 0f; 
+    public float normalExposure = 0f;    
+    public float normalChromatic = 0f;
     public float normalVignette = 0.15f; 
 
-    [Header("视觉参数：死亡时")]
+    [Header("视觉参数：死亡时 (被回溯接管)")]
     public float deathSaturation = -100f; 
     public float deathVignette = 0.6f;    
     public float deathTransitionSpeed = 5f; 
 
-    [Header("视觉参数：极速穿梭色差 (Chromatic)")]
+    [Header("视觉参数：极速穿梭色差 (Dash Chromatic)")]
     public float dashChromatic = 1f; 
     public float chromaticSpeed = 15f;  
     public float dashVisualDuration = 0.3f; 
@@ -75,10 +75,11 @@ public class VisualFeedbackController : MonoBehaviour
     private PaniniProjection _paniniProjection;
 
     private float _dashEffectTimer = 0f;
-    
     private float _originalEmissionRate;
     private float _originalSimSpeed;
     private float _currentParticleIntensity = 0f;
+
+    private bool _isRebooting = false; 
 
     void Awake()
     {
@@ -95,7 +96,6 @@ public class VisualFeedbackController : MonoBehaviour
             globalVolume.profile.TryGet(out _lensDistortion);
             globalVolume.profile.TryGet(out _paniniProjection);
 
-            // 记录下你原本在 Volume 面板里设置好的平滑度（0.2）
             if (_vignette != null)
             {
                 _baseVignetteSmoothness = _vignette.smoothness.value;
@@ -121,20 +121,17 @@ public class VisualFeedbackController : MonoBehaviour
     {
         if (_colorAdjustments == null || _vignette == null) return;
 
-        // --- 1. 爆发性特效的平滑消散 ---
-        // 白光消散（比之前稍微慢了一点）
         _currentExposure = Mathf.Lerp(_currentExposure, 0f, Time.unscaledDeltaTime * flashDecaySpeed);
-        _colorAdjustments.postExposure.value = _currentExposure;
-
-        // 【核心修改】：黑圈使用专属的极慢消散速度！并且同时平滑还原厚度和渐变度
         _currentVignettePunch = Mathf.Lerp(_currentVignettePunch, 0f, Time.unscaledDeltaTime * vignetteDecaySpeed);
         _currentVignetteSmoothness = Mathf.Lerp(_currentVignetteSmoothness, _baseVignetteSmoothness, Time.unscaledDeltaTime * vignetteDecaySpeed);
 
-        // --- 2. 管道状态计时器 ---
         if (DashController.Instance != null && DashController.Instance.isDashing)
         {
             _dashEffectTimer = dashVisualDuration; 
         }
+
+        // 🚨 核心阻断：如果正在回溯，锁死所有的常规视角更新！
+        if (_isRebooting) return;
 
         float targetIntensity = 0f;
         float targetDistortion = 0f;
@@ -157,10 +154,6 @@ public class VisualFeedbackController : MonoBehaviour
             targetFrequency = normalFrequency;   
         }
 
-        // --- 3. 空间折叠与色差过渡 ---
-        if (_chromaticAberration != null)
-            _chromaticAberration.intensity.value = Mathf.Lerp(_chromaticAberration.intensity.value, targetIntensity * dashChromatic, Time.unscaledDeltaTime * chromaticSpeed);
-            
         _currentDistortion = Mathf.Lerp(_currentDistortion, targetDistortion, Time.unscaledDeltaTime * distortionSpeed);
         if (_lensDistortion != null)
             _lensDistortion.intensity.value = _currentDistortion;
@@ -171,7 +164,6 @@ public class VisualFeedbackController : MonoBehaviour
         if (_lowPassFilter != null)
             _lowPassFilter.cutoffFrequency = Mathf.Lerp(_lowPassFilter.cutoffFrequency, targetFrequency, Time.unscaledDeltaTime * audioTransitionSpeed);
 
-        // --- 4. 粒子衰减系统 ---
         if (speedLines != null)
         {
             _currentParticleIntensity = Mathf.Lerp(_currentParticleIntensity, targetIntensity, Time.unscaledDeltaTime * particleFadeSpeed);
@@ -185,7 +177,6 @@ public class VisualFeedbackController : MonoBehaviour
             else if (_currentParticleIntensity <= 0.05f && speedLines.isPlaying) speedLines.Stop(); 
         }
 
-        // --- 5. 基础暗角与爆发暗角的完美融合 ---
         if (Time.timeScale == 0f)
         {
             _colorAdjustments.saturation.value = Mathf.Lerp(_colorAdjustments.saturation.value, deathSaturation, Time.unscaledDeltaTime * deathTransitionSpeed);
@@ -195,33 +186,34 @@ public class VisualFeedbackController : MonoBehaviour
         }
 
         float t = Mathf.Clamp01((Time.timeScale - 0.05f) / (1f - 0.05f));
+        
+        float timeExposure = Mathf.Lerp(slowExposure, normalExposure, t);
+        _colorAdjustments.postExposure.value = _currentExposure + timeExposure;
         _colorAdjustments.saturation.value = Mathf.Lerp(slowSaturation, normalSaturation, t);
         
         float baseVignette = Mathf.Lerp(slowVignette, normalVignette, t);
-        
-        // 【核心修改】：应用厚度，同时应用极度丝滑的深渊渐变效果！
         _vignette.intensity.value = Mathf.Clamp01(baseVignette + _currentVignettePunch);
         _vignette.smoothness.value = _currentVignetteSmoothness;
+
+        float timeChromatic = Mathf.Lerp(slowChromatic, normalChromatic, t);
+        float finalChromaticTarget = (targetIntensity * dashChromatic) + timeChromatic;
+        
+        if (_chromaticAberration != null)
+        {
+            _chromaticAberration.intensity.value = Mathf.Lerp(_chromaticAberration.intensity.value, finalChromaticTarget, Time.unscaledDeltaTime * chromaticSpeed);
+        }
     }
 
-    public void TriggerTunnelEffect(float duration)
-    {
-        _dashEffectTimer = Mathf.Max(_dashEffectTimer, duration);
-    }
+    public void TriggerTunnelEffect(float duration) { _dashEffectTimer = Mathf.Max(_dashEffectTimer, duration); }
 
     public void TriggerJumpPadFeedback()
     {
         _currentExposure = maxFlashExposure; 
         _currentDistortion = jumpPadDistortionPunch; 
-        
-        // 【新增大招】：起跳瞬间拉满黑视厚度和黑视平滑渐变！
         _currentVignettePunch = jumpPadVignettePunch;
         _currentVignetteSmoothness = jumpPadVignetteSmoothness;
 
-        if (!_isShaking && Camera.main != null)
-        {
-            StartCoroutine(ShakeCameraRoutine());
-        }
+        if (!_isShaking && Camera.main != null) StartCoroutine(ShakeCameraRoutine());
     }
 
     private IEnumerator ShakeCameraRoutine()
@@ -246,5 +238,113 @@ public class VisualFeedbackController : MonoBehaviour
 
         targetTransform.localPosition = originalPos;
         _isShaking = false;
+    }
+
+    // ==========================================
+    // 🚨 阶段 3：高维白光 CRT 回溯 (Tracer Flashback)
+    // ==========================================
+    public void TriggerRebootVisuals(float duration)
+    {
+        if (!_isRebooting) StartCoroutine(RebootVisualRoutine(duration));
+    }
+
+    private IEnumerator RebootVisualRoutine(float duration)
+    {
+        _isRebooting = true; 
+
+        if (_colorAdjustments != null)
+        {
+            _colorAdjustments.saturation.overrideState = true;
+            _colorAdjustments.colorFilter.overrideState = true;
+            _colorAdjustments.postExposure.overrideState = true;
+            _colorAdjustments.contrast.overrideState = true; 
+        }
+        if (_chromaticAberration != null) _chromaticAberration.intensity.overrideState = true;
+        if (_lensDistortion != null) _lensDistortion.intensity.overrideState = true;
+        if (_vignette != null) _vignette.intensity.overrideState = true;
+
+        if (_lowPassFilter != null) _lowPassFilter.cutoffFrequency = 400f; // 听觉瞬间坠入深海
+
+        // 💥 阶段 A：起步爆发 (0.2秒) —— 瞬间闪白与空间向后塌陷
+        float flashTime = 0.2f;
+        float elapsed = 0f;
+        
+        while (elapsed < flashTime)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / flashTime;
+
+            if (_colorAdjustments != null)
+            {
+                _colorAdjustments.saturation.value = Mathf.Lerp(normalSaturation, -100f, t);
+                _colorAdjustments.postExposure.value = Mathf.Lerp(normalExposure, 3.5f, t); // 极其刺眼的高维白光
+                _colorAdjustments.contrast.value = Mathf.Lerp(0f, 40f, t);
+            }
+            if (_lensDistortion != null) _lensDistortion.intensity.value = Mathf.Lerp(0f, -0.6f, t); // 空间后置拉扯
+            if (_chromaticAberration != null) _chromaticAberration.intensity.value = Mathf.Lerp(0f, 1f, t);
+            if (_vignette != null) _vignette.intensity.value = Mathf.Lerp(normalVignette, 0.5f, t);
+
+            yield return null;
+        }
+
+        // 🚀 阶段 B：高维白光滑行 (匹配物理回溯的耗时，预留最后0.3秒恢复)
+        float sustainTime = Mathf.Max(0f, duration - flashTime - 0.3f);
+        elapsed = 0f;
+
+        while (elapsed < sustainTime)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            
+            // 维持高维白光，伴随极其微弱的电压频闪和强烈的色散
+            if (_colorAdjustments != null)
+                _colorAdjustments.postExposure.value = Random.Range(3.0f, 3.8f);
+            
+            if (_chromaticAberration != null) 
+                _chromaticAberration.intensity.value = Random.Range(0.8f, 1.2f);
+            
+            if (_lensDistortion != null)
+                _lensDistortion.intensity.value = Random.Range(-0.65f, -0.55f);
+
+            yield return null;
+        }
+
+        // 🌊 阶段 C：现实重连 (0.3秒) —— 白光如潮水般褪去，色彩瞬间涌入
+        float recoverTime = 0.3f;
+        elapsed = 0f;
+
+        while (elapsed < recoverTime)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            // 采用平滑曲线(SmoothStep)，让落地感更扎实
+            float t = elapsed / recoverTime;
+            float smoothT = t * t * (3f - 2f * t);
+
+            if (_colorAdjustments != null)
+            {
+                _colorAdjustments.postExposure.value = Mathf.Lerp(3.5f, normalExposure, smoothT);
+                _colorAdjustments.saturation.value = Mathf.Lerp(-100f, normalSaturation, smoothT);
+                _colorAdjustments.contrast.value = Mathf.Lerp(40f, 0f, smoothT);
+            }
+            if (_lensDistortion != null) _lensDistortion.intensity.value = Mathf.Lerp(-0.6f, 0f, smoothT);
+            if (_chromaticAberration != null) _chromaticAberration.intensity.value = Mathf.Lerp(1f, 0f, smoothT);
+            if (_vignette != null) _vignette.intensity.value = Mathf.Lerp(0.5f, normalVignette, smoothT);
+            if (_lowPassFilter != null) _lowPassFilter.cutoffFrequency = Mathf.Lerp(400f, normalFrequency, smoothT);
+
+            yield return null;
+        }
+
+        // 兜底重置
+        if (_lowPassFilter != null) _lowPassFilter.cutoffFrequency = normalFrequency;
+        if (_colorAdjustments != null) 
+        {
+            _colorAdjustments.colorFilter.value = Color.white;
+            _colorAdjustments.postExposure.value = normalExposure;
+            _colorAdjustments.contrast.value = 0f;
+            _colorAdjustments.saturation.value = normalSaturation;
+        }
+        if (_chromaticAberration != null) _chromaticAberration.intensity.value = 0f;
+        if (_lensDistortion != null) _lensDistortion.intensity.value = 0f;
+        
+        _isRebooting = false; 
     }
 }

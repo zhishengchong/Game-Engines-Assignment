@@ -2454,6 +2454,14 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 2609866088878031649, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: Target.TrackingTarget
+      value: 
+      objectReference: {fileID: 1060331692}
+    - target: {fileID: 2609866088878031649, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: Target.CustomLookAtTarget
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2862278905927072855, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.x
       value: -22.210217
@@ -2465,6 +2473,10 @@ PrefabInstance:
     - target: {fileID: 2862278905927072855, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.z
       value: -23.948788
+      objectReference: {fileID: 0}
+    - target: {fileID: 2862278905927073192, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      propertyPath: m_Name
+      value: PlayerFollowCamera
       objectReference: {fileID: 0}
     - target: {fileID: 5126527961139664760, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2546,7 +2558,9 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2862278905927072854, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+    - {fileID: 757721613204953321, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 5126527961139664760, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
@@ -2572,6 +2586,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1676715058}
   m_SourcePrefab: {fileID: 100100000, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+--- !u!4 &1060331692 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5242107653240477475, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+  m_PrefabInstance: {fileID: 1060331691}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1092060405
 GameObject:
   m_ObjectHideFlags: 0
@@ -2789,10 +2808,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2384631e2ce73de4d8980b8579d9107e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slowTimeScale: 0.05
-  normalTimeScale: 1
-  lerpSpeed: 10
-  actionTimeBuffer: 0.1
+  minTimeScale: 0.1
+  abilityDuration: 3.5
+  cooldownTime: 5
+  adrenalineCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  timeSlowActivateSound: {fileID: 0}
+  skillText: {fileID: 0}
+  asciiBarText: {fileID: 0}
+  asciiBarLength: 20
+  filledChar: "\u2588"
+  emptyChar: '-'
+  leftBracket: {fileID: 0}
+  rightBracket: {fileID: 0}
+  leftGraphic: {fileID: 0}
+  rightGraphic: {fileID: 0}
+  centerCrosshairImage: {fileID: 0}
+  bracketDistanceOpen: 60
+  bracketDistanceClosed: 15
+  colorReady: {r: 1, g: 1, b: 1, a: 1}
+  colorCrosshairNormal: {r: 1, g: 1, b: 1, a: 1}
+  colorActive: {r: 1, g: 0.1, b: 0.1, a: 1}
+  colorCooldown: {r: 0.4, g: 0.4, b: 0.4, a: 1}
 --- !u!1 &1189383839
 GameObject:
   m_ObjectHideFlags: 0
@@ -3398,6 +3457,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   deathTextUI: {fileID: 642990101}
   winTextUI: {fileID: 1525406244}
+  ballCountTextUI: {fileID: 0}
+  totalBallsRequired: 3
 --- !u!4 &1462994353
 Transform:
   m_ObjectHideFlags: 0
@@ -3426,9 +3487,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualFeedbackController
   globalVolume: {fileID: 1416077846}
+  speedLines: {fileID: 0}
+  particleFadeSpeed: 15
+  maxFlashExposure: 2.5
+  flashDecaySpeed: 5
+  shakeDuration: 0.2
+  shakeMagnitude: 0.2
+  jumpPadDistortionPunch: -0.85
+  tunnelSustainedDistortion: -0.3
+  paniniDistance: 1
+  distortionSpeed: 10
+  muffledFrequency: 1500
+  normalFrequency: 22000
+  audioTransitionSpeed: 10
+  jumpPadVignettePunch: 0.85
+  jumpPadVignetteSmoothness: 1
+  vignetteDecaySpeed: 2.5
   slowSaturation: -60
+  slowExposure: -1.5
+  slowChromatic: 1
   slowVignette: 0.45
   normalSaturation: 0
+  normalExposure: 0
+  normalChromatic: 0
   normalVignette: 0.15
   deathSaturation: -100
   deathVignette: 0.6

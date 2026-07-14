@@ -18,10 +18,21 @@ public class TunnelRailSystem : MonoBehaviour
     public float chromaticDuration = 2f; 
 
     private bool _isOccupied = false;
+    private float _tunnelCooldownTimer = 0f; // 💡 修复2：入口防重复吸附冷却
+
+    void Update()
+    {
+        // 💡 刷新入口冷却
+        if (_tunnelCooldownTimer > 0f)
+        {
+            _tunnelCooldownTimer -= Time.deltaTime;
+        }
+    }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && !_isOccupied)
+        // 💡 修复2：如果玩家刚刚用 Dash 撕裂了管道，1.5秒内拒绝二次吸入！
+        if (other.CompareTag("Player") && !_isOccupied && _tunnelCooldownTimer <= 0f)
         {
             StartCoroutine(TractorBeamRoutine(other.gameObject));
         }
@@ -30,6 +41,11 @@ public class TunnelRailSystem : MonoBehaviour
     private IEnumerator TractorBeamRoutine(GameObject player)
     {
         _isOccupied = true;
+
+        if (DashController.Instance != null)
+        {
+            DashController.Instance.ConfirmTunnelEntry();
+        }
 
         CharacterController cc = player.GetComponent<CharacterController>();
         FirstPersonController fpc = player.GetComponent<FirstPersonController>();
@@ -45,22 +61,25 @@ public class TunnelRailSystem : MonoBehaviour
         Vector3 tunnelDir = (endPoint.position - startPoint.position).normalized;
         float currentSpeed = cc != null ? Mathf.Max(cc.velocity.magnitude, initialSpeed) : initialSpeed;
 
-        // ==========================================
-        // 【防穿模重构】：计算管道的总长度
-        // ==========================================
         float totalTunnelLength = Vector3.Distance(startPoint.position, endPoint.position);
         float distanceAlongLine = 0f;
 
-        // 只要玩家在管道方向上的投影距离还没超过总长度，就继续牵引
+        bool isAbortedByDash = false; 
+
         while (distanceAlongLine < totalTunnelLength)
         {
-            currentSpeed += acceleration * Time.unscaledDeltaTime;
+            if (DashController.Instance != null && DashController.Instance.isDashing)
+            {
+                isAbortedByDash = true;
+                break; 
+            }
+
+            // 💡 修复3：将 unscaledDeltaTime 替换为 deltaTime，让风洞速度向 F 键臣服！
+            currentSpeed += acceleration * Time.deltaTime; 
 
             Vector3 offsetFromStart = currentPos - startPoint.position;
-            // 计算玩家当前在管道中轴线上究竟走到了哪一步
             distanceAlongLine = Vector3.Dot(offsetFromStart, tunnelDir);
 
-            // 【终极保险】：如果在这一帧由于速度过快，直接算到了终点之外，立刻打破循环！
             if (distanceAlongLine >= totalTunnelLength)
             {
                 break;
@@ -70,7 +89,8 @@ public class TunnelRailSystem : MonoBehaviour
             Vector3 targetPullPoint = pointOnLine + tunnelDir * suctionSmoothness;
             Vector3 moveDir = (targetPullPoint - currentPos).normalized;
             
-            currentPos += moveDir * currentSpeed * Time.unscaledDeltaTime;
+            // 💡 修复3：移动步长受子弹时间影响
+            currentPos += moveDir * currentSpeed * Time.deltaTime; 
             player.transform.position = currentPos;
 
             if (VisualFeedbackController.Instance != null) 
@@ -81,17 +101,25 @@ public class TunnelRailSystem : MonoBehaviour
             yield return null;
         }
 
-        // ==========================================
-        // 到达终点后的收尾动作
-        // ==========================================
-        player.transform.position = endPoint.position;
-        if (cc != null) cc.enabled = true; 
-        
-        if (fpc != null) fpc.ApplyJumpPadForce(tunnelDir * exitForce);
-
-        if (DashController.Instance != null) 
+        if (isAbortedByDash)
         {
-            DashController.Instance.ReleaseFOV();
+            Debug.Log("💥 [Tunnel] 玩家使用了 Dash 暴力挣脱了管道牵引！");
+            
+            // 💡 修复2补充：暴力打断时，强制给管道入口上锁 1.5 秒！FOV 和控制权交给 Dash 自己处理！
+            _tunnelCooldownTimer = 1.5f;
+        }
+        else
+        {
+            player.transform.position = endPoint.position;
+            
+            if (cc != null) cc.enabled = true; 
+            
+            if (fpc != null) fpc.ApplyJumpPadForce(tunnelDir * exitForce);
+
+            if (DashController.Instance != null) 
+            {
+                DashController.Instance.ReleaseFOV();
+            }
         }
 
         _isOccupied = false;

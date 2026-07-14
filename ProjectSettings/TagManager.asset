@@ -7,6 +7,7 @@ TagManager:
   - CinemachineTarget
   - Enemy
   - Environment
+  - TargetSwitch
   layers:
   - Default
   - TransparentFX
@@ -16,8 +17,8 @@ TagManager:
   - UI
   - Environment
   - Weapon
-  - 
-  - 
+  - Interactable
+  - Enemy
   - 
   - 
   - 
